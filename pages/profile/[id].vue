@@ -1,0 +1,883 @@
+<template>
+  <div class="flex h-screen bg-gray-900 dark:bg-gray-900 transition-colors relative">
+
+    <!-- 移动端顶部栏 -->
+    <header v-if="mobileHeaderShow" class="md:hidden w-full bg-gray-800 dark:bg-gray-800 flex items-center justify-between p-4 shadow-md fixed top-0 z-30">
+      <div class="flex items-center space-x-2">
+        <!-- 返回首页按钮 -->
+        <button
+          @click="$router.push('/')"
+          class="flex items-center px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg shadow transition duration-300"
+        >
+          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 18l-6-6 6-6"></path>
+          </svg>
+          首页
+        </button>
+        
+      </div>
+      <button @click="showMobileMenu = !showMobileMenu" class="text-gray-300 dark:text-gray-300 text-2xl">
+        ☰
+      </button>
+    </header>
+
+    <!-- 移动端抽屉 + 遮罩 -->
+    <transition name="slide">
+      <div v-if="showMobileMenu" class="fixed inset-0 z-40 flex">
+        <!-- 遮罩 -->
+        <div class="fixed inset-0 bg-black/40" @click="showMobileMenu = false"></div>
+        <!-- 抽屉 -->
+        <aside class="relative w-64 bg-gray-800 dark:bg-gray-800 p-6 shadow-lg overflow-auto">
+          <h2 class="text-xl font-bold text-gray-200 dark:text-gray-200 mb-4">菜单</h2>
+          <ul class="space-y-2">
+            <li
+              v-for="item in menuList"
+              :key="item.key"
+              @click="selectMenu(item.key)"
+              class="flex items-center p-3 rounded-lg cursor-pointer transition-all duration-200"
+              :class="activeMenu === item.key
+                ? 'bg-yellow-500 text-white shadow-md scale-105'
+                : 'text-gray-300 dark:text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-700'">
+              <span class="text-lg mr-3">{{ item.icon }}</span>
+              <span class="font-medium text-sm">{{ item.label }}</span>
+            </li>
+          </ul>
+        </aside>
+      </div>
+    </transition>
+
+    <!-- 左侧菜单（桌面端） -->
+    <aside class="hidden md:flex w-64 bg-gray-800 dark:bg-gray-800 border-r border-gray-700 dark:border-gray-700 p-6 flex-col rounded-r-2xl shadow-lg">
+      <h2 class="text-xl font-bold text-gray-200 dark:text-gray-200 mb-6">个人中心</h2>
+      <ul class="flex-1 space-y-2">
+        <li
+          v-for="item in menuList"
+          :key="item.key"
+          @click="selectMenu(item.key)"
+          class="flex items-center p-3 rounded-lg cursor-pointer transition-all duration-200"
+          :class="activeMenu === item.key
+            ? 'bg-yellow-500 text-white shadow-md scale-105'
+            : 'text-gray-300 dark:text-gray-300 hover:bg-gray-700 dark:hover:bg-gray-700'">
+          <span class="text-lg mr-3">{{ item.icon }}</span>
+          <span class="font-medium text-sm">{{ item.label }}</span>
+        </li>
+      </ul>
+      <!-- <div class="mt-auto text-gray-400 dark:text-gray-500 text-xs">版本 1.0.0</div> -->
+    </aside>
+
+    <!-- 右侧内容 -->
+    <main class="flex-1 md:pt-8 p-4 md:p-8 overflow-auto bg-gray-900 dark:bg-gray-900" :class="mobileHeaderShow ? 'pt-20' : ''">
+      <!-- 页面顶部：返回按钮 + 标题 -->
+      <div class="hidden md:block mb-6 flex items-center space-x-4">
+        <button
+          @click="$router.push('/')"
+          class="flex items-center px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-medium rounded-lg shadow-md transition duration-300"
+        >
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 18l-6-6 6-6"></path>
+          </svg>
+          返回首页
+        </button>
+        <!-- <h3 class="text-3xl font-bold text-gray-800 dark:text-gray-200">个人信息</h3> -->
+      </div>
+
+      <!-- 个人信息内容 -->
+      <div v-if="activeMenu === 'person'">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- 用户信息模块 -->
+            <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div class="bg-gradient-to-br from-blue-900 to-blue-800 dark:from-blue-900 dark:to-blue-800 rounded-xl shadow-lg p-6 transition-all hover:scale-105 hover:shadow-2xl relative">
+                <span class="absolute top-3 right-3 text-blue-300 dark:text-blue-300 text-2xl">🆔</span>
+                <p class="text-gray-400 dark:text-gray-400 mb-2 text-sm">用户ID</p>
+                <p class="text-lg font-semibold text-gray-200 dark:text-gray-200">{{ person.userNo }}</p>
+            </div>
+            <div class="bg-gradient-to-br from-purple-900 to-purple-800 dark:from-purple-900 dark:to-purple-800 rounded-xl shadow-lg p-6 transition-all hover:scale-105 hover:shadow-2xl relative">
+                <span class="absolute top-3 right-3 text-blue-400 dark:text-purple-300 text-2xl">👤</span>
+                <p class="text-gray-400 dark:text-gray-400 mb-2 text-sm">用户类型</p>
+                <p class="text-lg font-semibold text-gray-200 dark:text-gray-200">{{getMemType(person.memType)}}</p>
+            </div>
+            <div class="bg-gradient-to-br from-green-900 to-green-800 dark:from-green-900 dark:to-green-800 rounded-xl shadow-lg p-6 transition-all hover:scale-105 hover:shadow-2xl relative">
+                <span class="absolute top-3 right-3 text-green-300 dark:text-green-300 text-2xl">🏷️</span>
+                <p class="text-gray-400 dark:text-gray-400 mb-2 text-sm">是否代理</p>
+                <p class="text-lg font-semibold text-gray-200 dark:text-gray-200">{{getProxyType(person.isProxy)}}</p>
+            </div>
+            <div class="bg-gradient-to-br from-yellow-900 to-yellow-800 dark:from-yellow-900 dark:to-yellow-800 rounded-xl shadow-lg p-6 transition-all hover:scale-105 hover:shadow-2xl relative">
+                <span class="absolute top-3 right-3 text-yellow-300 dark:text-yellow-300 text-2xl">✉️</span>
+                <p class="text-gray-400 dark:text-gray-400 mb-2 text-sm">邮箱</p>
+                <p class="text-lg font-semibold text-gray-200 dark:text-gray-200 truncate ...">{{person.email}}</p>
+            </div>
+
+            <div class="bg-gradient-to-br from-pink-900 to-pink-800 dark:from-pink-900 dark:to-pink-800 rounded-xl shadow-lg p-6 transition-all hover:scale-105 hover:shadow-2xl relative">
+                <span class="absolute top-3 right-3 text-pink-400 dark:text-pink-300 text-2xl">🎫</span>
+                <p class="text-gray-400 dark:text-gray-400 mb-2 text-sm">邀请码</p>
+                <p class="text-lg font-semibold text-gray-200 dark:text-gray-200">{{person.inviterCode}}</p>
+            </div>
+            <div class="bg-gradient-to-br from-red-900 to-red-800 dark:from-red-900 dark:to-red-800 rounded-xl shadow-lg p-6 transition-all hover:scale-105 hover:shadow-2xl relative">
+                <span class="absolute top-3 right-3 text-red-400 dark:text-red-300 text-2xl">⏳</span>
+                <p class="text-gray-400 dark:text-gray-400 mb-2 text-sm">到期时间</p>
+                <p v-if="Number(person.remainTime) > 3 * 365 * 24 * 60 * 60 * 1000" class="text-lg font-semibold text-gray-200 dark:text-gray-200">永久</p>
+                <p v-else class="text-lg font-semibold text-gray-200 dark:text-gray-200">{{ Math.floor(person.remainTime / (24 * 60 * 60 * 1000)) }}天</p>
+                
+            </div>
+            </section>
+
+            <!-- 成为会员模块 -->
+            <section class="bg-gray-800 dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8 transition-all hover:shadow-xl relative border-t-4 border-yellow-400 dark:border-yellow-500">
+            <h4 class="text-xl font-semibold mb-4 text-gray-200 dark:text-gray-200">成为会员</h4>
+            <p class="text-gray-400 dark:text-gray-400">开通会员即可享受更多功能和服务。</p>
+            <button @click="selectMenu('pay')" class="mt-4 px-6 py-2 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-white font-medium rounded-lg shadow transition duration-300">立即开通/续费</button>
+            </section>
+
+            <!-- 客户端下载模块 -->
+            <section class="bg-gray-800 dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8 transition-all hover:shadow-xl relative border-t-4 border-blue-400 dark:border-blue-500">
+            <h4 class="text-xl font-semibold mb-4 text-gray-200 dark:text-gray-200">客户端下载</h4>
+            <div class="flex flex-wrap gap-4">
+                <button class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg shadow transition duration-300" @click="download('windows')">Windows</button>
+                <button class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg shadow transition duration-300" @click="download('darwin')">Mac</button>
+                <button class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg shadow transition duration-300" @click="download('android')">Android</button>
+                <button class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg shadow transition duration-300" @click="download('ios')">iOS</button>
+            </div>
+            </section>
+
+            <!-- 小伙计订阅管理 -->
+            <section class="bg-gray-800 dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8 transition-all hover:shadow-xl relative border-t-4 border-purple-500 dark:border-purple-500">
+            <h4 class="text-xl font-semibold mb-4 text-gray-200 dark:text-gray-200">获取小伙计订阅 / 重置订阅</h4>
+            <div class="flex flex-wrap gap-4">
+                <button class="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white font-medium rounded-lg shadow transition duration-300" @click="getSub">获取订阅</button>
+                <button class="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-medium rounded-lg shadow transition duration-300" @click="resetSub">重置订阅</button>
+                <button class="px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-medium rounded-lg shadow transition duration-300" @click="goStudy">小火箭下载教程</button>
+            </div>
+            </section>
+
+            <!-- 邀请人数模块 -->
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-gray-800 dark:bg-gray-800 rounded-xl shadow-lg p-6 transition-all hover:scale-105 hover:shadow-2xl relative">
+                <span class="absolute top-3 right-3 text-green-300 dark:text-green-300 text-2xl">📩</span>
+                <p class="text-gray-400 dark:text-gray-400 mb-2 text-sm">今日邀请人数</p>
+                <p class="text-lg font-semibold text-gray-200 dark:text-gray-200">{{statis.today_invitation_count}}</p>
+            </div>
+            <div class="bg-gray-800 dark:bg-gray-800 rounded-xl shadow-lg p-6 transition-all hover:scale-105 hover:shadow-2xl relative">
+                <span class="absolute top-3 right-3 text-blue-300 dark:text-blue-300 text-2xl">🌐</span>
+                <p class="text-gray-400 dark:text-gray-400 mb-2 text-sm">总共邀请人数</p>
+                <p class="text-lg font-semibold text-gray-200 dark:text-gray-200">{{statis.total_invitation_count}}</p>
+            </div>
+            </section>
+
+            <!-- 用户积分 / 收益模块 -->
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-gray-800 dark:bg-gray-800 rounded-xl shadow-lg p-6 transition-all hover:scale-105 hover:shadow-2xl relative">
+                <span class="absolute top-3 right-3 text-yellow-300 dark:text-yellow-300 text-2xl">💎</span>
+                <p class="text-gray-400 dark:text-gray-400 mb-2 text-sm">用户积分</p>
+                <p class="text-lg font-semibold text-gray-200 dark:text-gray-200">{{person.coin}}</p>
+            </div>
+            <div class="bg-gray-800 dark:bg-gray-800 rounded-xl shadow-lg p-6 transition-all hover:scale-105 hover:shadow-2xl relative">
+                <span class="absolute top-3 right-3 text-green-300 dark:text-green-300 text-2xl">💰</span>
+                <p class="text-gray-400 dark:text-gray-400 mb-2 text-sm">用户收益</p>
+                <p class="text-lg font-semibold text-gray-200 dark:text-gray-200">￥{{person.balance}}</p>
+            </div>
+            </section>
+
+        </div>
+      </div>
+      <!-- 其他菜单同理 -->
+
+      <div v-if="activeMenu === 'pay'">
+            <div class="min-h-screen bg-gray-900 dark:bg-gray-900 py-4 px-4">
+                <h1 class="text-xl md:text-5xl font-extrabold text-center text-gray-100 dark:text-gray-100 mb-8">
+                套餐购买
+                </h1>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8 max-w-7xl mx-auto">
+
+                    <div 
+                        v-for="(plan, index) in plans" 
+                        :key="plan.id" 
+                        class="relative rounded-2xl shadow-xl p-6 transform transition duration-300 hover:scale-105 hover:shadow-2xl"
+  
+                        :class="colorGradients[index % colorGradients.length].bgClass"
+                        >
+                        <!-- 状态指示点也使用对应的颜色 -->
+                        <span 
+                            class="absolute top-4 right-4 text-2xl"
+                            :class="colorGradients[index % colorGradients.length].dotClass"
+                        >
+                            {{statusLight[index % (colorGradients.length + 1)]}}
+                        </span>
+                        
+                        <h2 class="text-xl mb-2" :class="colorGradients[index % colorGradients.length].titleClass">
+                            {{ plan.planName }}
+                        </h2>
+                        
+                        <p class="mb-4 text-xl font-bold text-yellow-300 dark:text-yellow-300" :class="colorGradients[index % colorGradients.length].textClass">
+                            {{ plan.finalMoney }} 元 / {{ plan.useDays > 3 * 365 ? '永久' : plan.useDays + "天" }}
+                        </p>
+                        
+                        <ul class="mb-6 space-y-2" :class="colorGradients[index % colorGradients.length].listClass">
+                            <li>高速 VPN 访问</li>
+                            <li>无限流量使用</li>
+                            <li>7x24 客服支持</li>
+                        </ul>
+                        
+                        <!-- 按钮也使用对应的主题色 -->
+                        <button @click="handlePayment(plan)" :disabled="payLoadingId == plan.id"
+                            class="w-full py-3 text-white font-semibold rounded-lg shadow transition duration-300 hover:shadow-lg"
+                            :class="colorGradients[index % colorGradients.length].btnClass" 
+                        >
+                          <template v-if="payLoadingId == plan.id">提交中..</template>
+                          <template v-else>立即购买</template>
+                            
+                        </button>
+                        </div>
+                        
+                </div>
+
+                <ModelDialog v-model="qcodeShow" title="请用手机扫描下面二维码进行支付">
+                  <template #default>
+    
+                    <div class="mb-4 flex items-center justify-center h-64">
+                        <canvas ref="qrCanvas" class="block"></canvas>
+                    </div>
+                  </template>
+
+                  <template #footer>
+                    <button class="px-4 py-2 rounded bg-gray-100" @click="qcodeShow = false">取消</button>
+                  </template>
+                </ModelDialog>
+                
+            </div>
+
+            <!-- <div>
+
+                <div style="margin: 0 auto; text-align: center;margin-bottom: 10px;">
+                    <el-text>使用支付宝客户端扫描一下二维码</el-text>
+                </div>
+                <div style="margin: 0 auto; text-align: center;">
+                    <canvas ref="qrCanvas"></canvas>
+                </div>
+
+            </div> -->
+      </div>
+
+      <div v-if="activeMenu === 'order'">
+    
+                <div class="min-h-screen bg-gray-900 dark:bg-gray-900 p-6 font-sans">
+                    <h1 class="text-3xl font-bold text-gray-200 dark:text-gray-200 mb-6">我的订单</h1>
+
+                    <!-- 订单列表：移动端单列，大屏两列 -->
+                    <div class="grid grid-cols-1 gap-6">
+                        <div
+                        v-for="order in orders"
+                        :key="order.id"
+                        class="relative rounded-2xl shadow-xl p-6 transform transition duration-300 hover:scale-105 hover:shadow-2xl bg-white dark:bg-gray-800 flex flex-col"
+                        >
+                        <!-- 状态标签 -->
+                        <span
+                            :class="[
+                            'absolute top-4 right-4 px-3 py-1 rounded-full text-sm font-medium',
+                            order.status === '已支付' ? 'bg-green-800 text-green-100 dark:bg-green-800 dark:text-green-100' :
+                            order.status === '未支付' ? 'bg-yellow-800 text-yellow-100 dark:bg-yellow-800 dark:text-yellow-100' :
+                            'bg-red-800 text-red-100 dark:bg-red-800 dark:text-red-100'
+                            ]"
+                        >
+                            {{ order.status }}
+                        </span>
+
+                        <div class="flex items-center space-x-4">
+                            <!-- 套餐 Emoji -->
+                            <div class="text-xl">{{ order.icon }}</div>
+
+                            <!-- 套餐信息 -->
+                            <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <h2 class="text-xl font-bold text-gray-200 dark:text-gray-200">{{ order.plan }}</h2>
+                            <p class="text-gray-400 dark:text-gray-400">价格：{{ order.price }} 元</p>
+                            <p class="text-gray-400 dark:text-gray-400">购买时间：{{ order.date }}</p>
+                            <p class="text-gray-400 dark:text-gray-400">有效期：{{ order.duration }}</p>
+                            </div>
+                        </div>
+
+                        <!-- 操作按钮 -->
+                        <!-- <div class="mt-4 flex flex-wrap gap-2 justify-end">
+                            <button class="flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg shadow transition duration-300">
+                            🛒 详情
+                            </button>
+                            <button
+                            v-if="order.status === '未支付'"
+                            class="flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg shadow transition duration-300"
+                            >
+                            💳 立即支付
+                            </button>
+                        </div> -->
+                        </div>
+                    </div>
+
+
+                    
+                </div>
+
+      </div>
+
+      <div v-if="activeMenu === 'coin'">
+            <div class="min-h-screen p-6 rounded-2xl
+              bg-gradient-to-b  from-gray-900 via-gray-800 to-gray-700
+              dark:from-gray-900 dark:via-gray-800 dark:to-gray-700">
+              
+                <!-- 页面标题 -->
+                <h1 class="text-4xl font-bold text-center text-gray-100 dark:text-gray-100 mb-10 drop-shadow-md">
+                积分兑换时长 ⏰
+                </h1>
+
+                <!-- 积分信息 -->
+                <div class="max-w-4xl mx-auto mb-8 p-6 
+                            bg-gray-800 dark:bg-gray-800 rounded-2xl shadow-lg flex justify-between items-center">
+                <div>
+                    <p class="text-gray-300 dark:text-gray-300">当前积分</p>
+                    <p class="text-3xl font-bold text-indigo-400 dark:text-indigo-400">{{person.coin}} 🪙</p>
+                </div>
+                <button  @click="openDialog"
+                    class="bg-indigo-600 hover:bg-indigo-500 dark:bg-indigo-600 dark:hover:bg-indigo-500 
+                        text-white font-semibold px-6 py-3 rounded-xl shadow-md transition-all duration-300">
+                    获取积分
+                </button>
+                </div>
+
+                <!-- 积分兑换时长列表 -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div 
+                    v-for="item in durations" 
+                    :key="item.days" 
+                    class="relative bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800 
+                          dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 
+                          rounded-2xl shadow-lg hover:shadow-2xl p-6 
+                          transform hover:-translate-y-2 hover:scale-[1.02] 
+                          transition-all duration-300">
+
+                    <!-- 点缀 -->
+                    <div class="absolute top-4 right-4 text-yellow-400 text-2xl animate-bounce">✨</div>
+
+                    <!-- 内容 -->
+                    <div class="text-center mb-6 space-y-2">
+                      <!-- 明确兑换内容 -->
+                      <p class="text-xl font-medium text-gray-300 dark:text-gray-300">
+                        兑换时长
+                      </p>
+                      <p class="text-3xl font-bold text-gray-100 dark:text-gray-100 tracking-wide">
+                        {{ item.name }}
+                      </p>
+
+                      <!-- 明确消耗积分 -->
+                      <p class="text-base text-gray-300 dark:text-gray-300">
+                        需要消耗 
+                        <span class="text-lg font-semibold text-pink-400 dark:text-pink-400">
+                          {{ item.coin }} 积分
+                        </span>
+                      </p>
+                    </div>
+
+                    <!-- 按钮 -->
+                    <button 
+                      :disabled="person.coin < item.coin || loadingId === item.id"
+                      @click="exchange(item)"
+                      class="w-full bg-gradient-to-r from-pink-600 to-purple-600 
+                            hover:from-purple-600 hover:to-pink-600 
+                            dark:from-pink-600 dark:to-purple-600 
+                            dark:hover:from-purple-600 dark:hover:to-pink-600 
+                            text-white font-semibold py-3 rounded-xl 
+                            shadow-md hover:shadow-lg 
+                            disabled:opacity-50 disabled:cursor-not-allowed 
+                            transition-all duration-300">
+                      <span v-if="loadingId === item.id">兑换中..</span>
+                      <span v-else>立即兑换</span>
+                    </button>
+                  </div>
+   
+
+
+                </div>
+            </div>
+      </div>
+    </main>
+
+
+    <Message message="订阅复制成功!" type="success" v-if="subSuccess" @close="subSuccess = false"/>
+    <Message message="操作成功!" type="success" v-if="operaSuccess" @close="operaSuccess = false"/>
+    <Message message="订阅获取失败,请重试" type="error" v-if="subError" @close="subError = false"/>
+    <Message message="支付成功!" type="success" v-if="paySuccess" @close="paySuccess = false"/>
+    <Message :message="convertSuccessMsg" type="success" v-if="convertSuccess" @close="convertSuccess = false"/>
+    <Message :message="operaErrorMsg" type="warning" v-if="operaError" @close="operaError = false"/>
+
+    <!-- 遮罩层 -->
+    <div 
+      v-if="showDialog"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div 
+        class="bg-gray-800 dark:bg-gray-800 rounded-2xl shadow-xl w-11/12 max-w-sm p-6 relative"
+      >
+        <!-- 内容 -->
+        <h2 class="text-xl font-semibold text-gray-100 dark:text-gray-100 mb-4">
+          🎉 获取积分
+        </h2>
+        <p class="text-gray-300 dark:text-gray-300 mb-6">
+          用户您可以在官网下载手机客户端,可以每日完成活动任务，每次完成任务可获取对应的积分，限时活动不要错过哟
+        </p>
+
+        <!-- 按钮 -->
+        <div class="flex justify-end">
+          <button 
+            @click="closeDialog"
+            class="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-lg shadow-md transition-all duration-300">
+            知道了
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+
+//拦截判断页面是否需要登录才能访问
+definePageMeta({
+  middleware: 'common'
+})
+
+import { ref } from 'vue'
+import { Message } from '#components'
+import { useAuthStore } from '~/stores/auth'
+import { useRouter } from 'vue-router'
+import QRCode from 'qrcode';
+const auth = useAuthStore()
+
+const router = useRouter()
+const route = useRoute()
+
+var qcodeShow = ref(false)
+
+var subSuccess = ref(false)
+var operaSuccess = ref(false)
+var paySuccess = ref(false)
+var subError = ref(false)
+var convertSuccess = ref(false)
+var convertSuccessMsg = ref("")
+var operaErrorMsg = ref("")
+var operaError = ref(false)
+const showDialog = ref(false)
+const openDialog = () => {
+  showDialog.value = true
+}
+const closeDialog = () => {
+  showDialog.value = false
+}
+const loadingId = ref<number | null>(null)
+const payLoadingId = ref<number | null>(null)
+var submiting = ref(false)
+var showQrCode = ref(false)
+var mobileHeaderShow = ref(true)
+
+const qrCanvas = ref(null);
+
+var person = ref({}) as any
+
+var statis = ref({}) as any
+
+const downloadLinks = ref<{
+  [key: string]: string;
+}>({
+  windows: '',
+  macos: '',
+  android: '',
+  ios: ''
+});
+
+const menuList = [
+  { key: 'person', label: '个人信息', icon: '👤' },
+  { key: 'pay', label: '套餐计划', icon: '💰' },
+  { key: 'coin', label: '积分兑换', icon: '🪙' }
+  // { key: 'order', label: '我的订单', icon: '🛒' }
+
+]
+
+const activeMenu = ref('')
+const showMobileMenu = ref(false)
+
+const plans = ref([]) as any
+
+interface Order {
+  id: number
+  plan: string
+  price: number
+  duration: string
+  date: string
+  status: '已支付' | '未支付' | '已取消'
+  icon: string
+}
+
+const orders: Order[] = [
+  { id: 1, plan: '月卡', price: 25, duration: '1个月', date: '2025-09-12', status: '已支付', icon: '🟢' },
+  { id: 2, plan: '季卡', price: 70, duration: '3个月', date: '2025-08-01', status: '未支付', icon: '🟣' },
+  { id: 3, plan: '半年卡', price: 126, duration: '6个月', date: '2025-07-20', status: '已支付', icon: '💚' },
+  { id: 4, plan: '年卡', price: 216, duration: '12个月', date: '2025-06-15', status: '已取消', icon: '🌟' },
+  { id: 5, plan: '永久卡', price: 398, duration: '永久', date: '2025-05-01', status: '已支付', icon: '🔥' },
+]
+
+
+const userPoints = ref(250);
+
+// 积分兑换时长配置
+const durations = ref([
+
+]) as any
+
+onMounted(() => {
+
+
+  const ua = navigator.userAgent
+  
+  if (/Android/i.test(ua)) {
+    mobileHeaderShow.value = false
+  } else if (/iPhone|iPad|iPod/i.test(ua)) {
+    mobileHeaderShow.value = false
+  } 
+
+  var accessToken = route.query.access_token;
+  if (accessToken) {
+      const currentPath = route.path;
+      router.replace({ path: currentPath });
+  }
+
+  activeMenu.value = route.params.id as string;
+  if (route.params.id == "pay") {
+      getPlanList()
+  } else if (route.params.id == "person") {
+      getPerson()
+
+      getStatis()
+
+      getDownLoad()
+  }else if (route.params.id === "coin") {
+    getPerson()
+    getDurtionList()
+  }
+
+})
+
+
+
+function selectMenu(key: string) {
+  activeMenu.value = key
+  showMobileMenu.value = false
+
+  if (key == "person") {
+
+      getPerson()
+
+      getStatis()
+
+      getDownLoad()
+
+  }else if (key === "pay") {
+    getPlanList()
+  } else if (key === "coin") {
+    getDurtionList()
+    getPerson()
+  }
+
+  if (key != "pay") {
+    clearInterval(intervalId)
+  }
+}
+
+async function getPlanList() {
+    const res = await planList()
+
+    if (res.code === 200) {
+        plans.value = res.data;
+    } 
+
+
+}
+
+async function exchange(item: any) {
+  // 点击后立刻禁用
+  loadingId.value = item.id
+  try {
+
+    const res = await convertDur({convertId : item.id})
+
+    if (res.code == 200) {
+      convertSuccess.value = true
+      convertSuccessMsg.value = `兑换成功！你获得了 ${item.duration} 天的使用时长 🎉`;
+      getPerson()
+    } else if (res.code == 850) {
+      operaError.value = true
+      operaErrorMsg.value = `充值使用时长未到期，无法兑换`;
+    } else if (res.code == 853) {
+      operaError.value = true
+      operaErrorMsg.value = `赠送使用时长未到期，无法兑换`;
+    } else if (res.code == 851) {
+      operaError.value = true
+      operaErrorMsg.value = `兑换码兑换时长未到期，无法兑换`;
+    } else if (res.code == 852) {
+      operaError.value = true
+      operaErrorMsg.value = `积分兑换使用时长未到期，无法兑换`;
+    } else {
+      //operaError.value = true
+      //operaErrorMsg.value = `系统错误`;
+    }
+
+  } finally {
+    loadingId.value = null
+  }
+  
+}
+
+async function getDurtionList() {
+    const res = await getDurList()
+
+    if (res.code === 200) {
+        durations.value = res.data;
+    } 
+}
+
+async function queryOrderRes(orderNo : string) {
+    const res = await queryOrder(orderNo)
+
+    if (res.data) {
+        paySuccess.value = true;
+
+        if (intervalId) {
+          clearInterval(intervalId);
+          qcodeShow.value = false;
+        }
+    } 
+
+}
+
+function isValidMobile() {
+    const userAgent = navigator.userAgent.toLowerCase();
+    // 常见移动设备关键字
+    const mobileKeywords = ['android', 'iphone', 'ipad', 'ipod', 'windows phone'];
+    // 检查 User-Agent 中是否包含移动设备关键字
+    for (let i = 0; i < mobileKeywords.length; i++) {
+        if (userAgent.indexOf(mobileKeywords[i])!== -1) {
+            return true;
+        }
+    }
+
+    return false
+}
+
+
+var intervalId : any = null;
+async function handlePayment(plan : any) {
+
+    if (intervalId) {
+        clearInterval(intervalId)
+    }
+    
+    payLoadingId.value = plan.id
+
+    try {
+
+        if (plan) {
+            //const selectedPlan = plans.value.find((plan) => plan.id === selectedPlan.value);
+            // proxy.$modal.msgSuccess("正在提交支付...");
+            var formData = {
+                payType: "alipay",
+                planId: plan.id
+            }
+            var res = await submitOrder(formData);
+            
+            if (res.code == 200) {
+                var data = res.data
+                console.log(data.qrcode)
+                if (isValidMobile()) {
+                    window.location.href = data.qrcode;
+                } else {
+                    qcodeShow.value = true;
+                    //payShow.value = true;
+                    // 使用 nextTick 确保在 DOM 更新后再生成二维码
+                    await nextTick();
+                    // 调用 qrcode 库的 toCanvas 方法生成二维码
+                    await QRCode.toCanvas(qrCanvas.value, data.qrcode);
+
+                    intervalId = setInterval(() => {
+                        queryOrderRes(data.orderNo)
+                    }, 5000);
+
+                    //window.open(data.qrcode)
+                }
+
+            } else {
+              operaError.value = true
+              operaErrorMsg.value = `支付获取失败，请联系客服`;
+            }
+        // 这里可以跳转到支付页面或调用支付接口
+    } 
+
+    } finally {
+        payLoadingId.value = 0
+    }
+
+}
+
+async function getPerson() {
+    const res = await auth.fetchUser()
+
+    if (res.code === 200) {
+        person.value = res.data;
+    } else {
+      router.push('/login')
+      return res;
+    }
+}
+
+function goStudy() {
+  router.push('/ios')
+}
+
+async function getStatis() {
+    const res = await myInvitStatis()
+
+    if (res.code === 200) {
+        statis = res.data
+    } 
+}
+
+async function getDownLoad() {
+    const res = await querySettings()
+
+    if (res.code === 200) {
+        var data = res.rows;
+        for (var index in data) {
+            if (data[index].appType == 'windows') {
+                downloadLinks.value.windows = data[index].downUrl
+            } else if (data[index].appType == 'android') {
+                downloadLinks.value.android = data[index].downUrl
+            } else if (data[index].appType == 'darwin') {
+                downloadLinks.value.macos = data[index].downUrl
+            } else if (data[index].appType == 'ios') {
+                downloadLinks.value.ios = data[index].downUrl
+            }
+        }
+    } 
+    
+}
+
+async function resetSub() {
+    const res = await restMyLink()
+
+    if (res.code === 200) {
+        operaSuccess.value = true
+    }
+
+}
+
+
+function download(name : string) {
+    var downObj = downloadLinks.value;
+    window.location.href = downObj[name]
+}
+
+
+const getSub = async () => {
+
+    try {
+
+        const res = await auth.fetchUser()
+
+        if (res.code === 200) {
+            var persion = res.data;
+
+            navigator.clipboard.writeText(persion.config.subUrl + "/subscr/shadowrocket/" + persion.link);
+
+            subSuccess.value = true;
+        } else {
+            subError.value = true;
+        }
+
+
+    } catch (err) {
+        subError.value = true;
+    }
+}
+
+
+function getMemType(val : string) {
+    if (val === "0") {
+        return "游客"
+    }else if (val == "1") {
+        return "普通"
+    }else if (val == "2") {
+        return "会员"
+    }else {
+        return "-"
+    }
+
+}
+
+function getProxyType(val : boolean) {
+    if (!val) {
+        return "否"
+    }else {
+        return "是"
+    }
+}
+
+const statusLight = [
+    "🟢",
+    "🟣",
+    "💚",
+    "🌟",
+    "🔥",
+    ]
+
+const colorGradients = [
+  // 蓝色主题
+  {
+    bgClass: 'bg-gradient-to-br from-blue-900 to-blue-800 dark:from-blue-900 dark:to-blue-800',
+    dotClass: 'text-blue-300 dark:text-blue-300',
+    titleClass: 'text-gray-200 dark:text-gray-200',
+    textClass: 'text-gray-400 dark:text-gray-400',
+    listClass: 'text-gray-300 dark:text-gray-300',
+    btnClass: 'bg-blue-600 hover:bg-blue-600'
+  },
+  // 绿色主题
+  {
+    bgClass: 'bg-gradient-to-br from-green-900 to-green-800 dark:from-green-900 dark:to-green-800',
+    dotClass: 'text-green-300 dark:text-green-300',
+    titleClass: 'text-gray-200 dark:text-gray-200',
+    textClass: 'text-gray-400 dark:text-gray-400',
+    listClass: 'text-gray-300 dark:text-gray-300',
+    btnClass: 'bg-green-600 hover:bg-green-600'
+  },
+  // 紫色主题
+  {
+    bgClass: 'bg-gradient-to-br from-purple-900 to-purple-800 dark:from-purple-900 dark:to-purple-800',
+    dotClass: 'text-purple-300 dark:text-purple-300',
+    titleClass: 'text-gray-200 dark:text-gray-200',
+    textClass: 'text-gray-400 dark:text-gray-400',
+    listClass: 'text-gray-300 dark:text-gray-300',
+    btnClass: 'bg-purple-600 hover:bg-purple-600'
+  },
+  // 橙色主题
+  {
+    bgClass: 'bg-gradient-to-br from-orange-900 to-orange-800 dark:from-orange-900 dark:to-orange-800',
+    dotClass: 'text-orange-300 dark:text-orange-300',
+    titleClass: 'text-gray-200 dark:text-gray-200',
+    textClass: 'text-gray-400 dark:text-gray-400',
+    listClass: 'text-gray-300 dark:text-gray-300',
+    btnClass: 'bg-orange-600 hover:bg-orange-600'
+  }
+];
+</script>
+
+<style>
+/* 抽屉动画 */
+.slide-enter-from { transform: translateX(-100%); }
+.slide-enter-to { transform: translateX(0); }
+.slide-leave-from { transform: translateX(0); }
+.slide-leave-to { transform: translateX(-100%); }
+.slide-enter-active,
+.slide-leave-active { transition: transform 0.3s ease; }
+</style>

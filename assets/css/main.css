@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.hljs {
+  @apply p-4 rounded-md overflow-x-auto text-sm leading-relaxed bg-gray-100 text-gray-800 mb-2 !important;
+}
+
+.dark .hljs {
+  @apply bg-gray-100 text-gray-100 mb-2 !important;
+}
