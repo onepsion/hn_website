@@ -98,4 +98,10 @@ export const listAppleAcc = (data : any) => {
   }) as any
 }
 
+export const queryDeviceList = () => {
+  return useApiFetch('/device/list', {
+    method: 'GET'
+  }) as any
+}
+
 

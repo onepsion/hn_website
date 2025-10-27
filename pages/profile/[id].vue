@@ -187,7 +187,7 @@
                 套餐购买
                 </h1>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8 max-w-7xl mx-auto">
+                <!-- <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8 max-w-7xl mx-auto">
 
                     <div 
                         v-for="(plan, index) in plans" 
@@ -196,7 +196,6 @@
   
                         :class="colorGradients[index % colorGradients.length].bgClass"
                         >
-                        <!-- 状态指示点也使用对应的颜色 -->
                         <span 
                             class="absolute top-4 right-4 text-2xl"
                             :class="colorGradients[index % colorGradients.length].dotClass"
@@ -218,7 +217,6 @@
                             <li>7x24 客服支持</li>
                         </ul>
                         
-                        <!-- 按钮也使用对应的主题色 -->
                         <button @click="handlePayment(plan)" :disabled="payLoadingId == plan.id"
                             class="w-full py-3 text-white font-semibold rounded-lg shadow transition duration-300 hover:shadow-lg"
                             :class="colorGradients[index % colorGradients.length].btnClass" 
@@ -229,7 +227,90 @@
                         </button>
                         </div>
                         
+                </div> -->
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8 max-w-7xl mx-auto mb-32 sm:mb-0">
+
+                    <div 
+                        v-for="(plan, index) in plans" 
+                        :key="plan.id" 
+                        class="relative rounded-2xl shadow-xl p-6 transform transition duration-300 hover:scale-105 hover:shadow-2xl"
+                         @click="selectPlan(plan)"
+                        :class="[
+                        colorGradients[index % colorGradients.length].bgClass,
+                        selectedPlan.id === plan.id ? 'border-4 border-yellow-500' : ''
+                    ]"
+                        >
+                        <span 
+                            class="absolute top-4 right-4 text-2xl"
+                            :class="colorGradients[index % colorGradients.length].dotClass"
+                        >
+                            {{statusLight[index % (colorGradients.length + 1)]}}
+                        </span>
+                        
+                        <h2 class="text-xl mb-2" :class="colorGradients[index % colorGradients.length].titleClass">
+                            {{ plan.planName }}
+                        </h2>
+                        
+                        <p class="mb-4 text-xl font-bold text-yellow-300 dark:text-yellow-300" :class="colorGradients[index % colorGradients.length].textClass">
+                            {{ plan.finalMoney }} 元 / {{ plan.useDays > 3 * 365 ? '永久' : plan.useDays + "天" }}
+                        </p>
+                        
+                        <ul class="mb-6 space-y-2" :class="colorGradients[index % colorGradients.length].listClass">
+                            <li>高速 VPN 访问</li>
+                            <li>无限流量使用</li>
+                            <li>7x24 客服支持</li>
+                        </ul>
+                        
+                        
+                      </div>
+
+                      
+                        
                 </div>
+
+                <!-- <button @click="handlePayment()" :disabled="payLoading"
+                    class="w-width py-3 text-white font-semibold rounded-lg shadow transition duration-300 hover:shadow-lg"
+                >
+                  <template v-if="payLoading">提交中..</template>
+                  <template v-else>立即购买</template>
+                    
+                </button> -->
+
+                <div class="col-span-full text-center mt-20 bg-gray-900   w-full  m-auto sm:max-w-xs sm:relative sm:mb-4 sm:w-auto sm:max-w-xs 
+               fixed bottom-0 left-0 right-0 py-3 ">
+
+                  <div class="mb-4  ">
+                    <label class="mr-4 text-white">
+                        <input 
+                            type="radio" 
+                            v-model="selectedPaymentMethod" 
+                            value="alipay" 
+                            class="mr-2 text-white"
+                        />
+                        支付宝
+                    </label>
+                    <label class="text-white">
+                        <input 
+                            type="radio" 
+                            v-model="selectedPaymentMethod" 
+                            value="wxpay" 
+                            class="mr-2 text-white"
+                        />
+                        微信
+                    </label>
+                </div>
+
+                  <button 
+                      @click="handlePayment()" 
+                      :disabled="payLoading"
+                      class="w-full sm:max-w-xs py-3 text-white font-semibold rounded-lg shadow transition duration-300 hover:shadow-lg bg-yellow-500"
+                  >
+                      <template v-if="payLoading">提交中..</template>
+                      <template v-else>立即购买</template>
+                  </button>
+              </div>
+
 
                 <ModelDialog v-model="qcodeShow" title="请用手机扫描下面二维码进行支付">
                   <template #default>
@@ -469,16 +550,21 @@ const closeDialog = () => {
   showDialog.value = false
 }
 const loadingId = ref<number | null>(null)
-const payLoadingId = ref<number | null>(null)
+
 var submiting = ref(false)
 var showQrCode = ref(false)
 var mobileHeaderShow = ref(true)
+var selectedPaymentMethod = ref("alipay")
 
 const qrCanvas = ref(null);
 
 var person = ref({}) as any
 
 var statis = ref({}) as any
+
+
+var selectedPlan = ref({}) as any
+const payLoading = ref(false)
 
 const downloadLinks = ref<{
   [key: string]: string;
@@ -587,6 +673,10 @@ function selectMenu(key: string) {
   }
 }
 
+async function selectPlan(plan:any) {
+    selectedPlan.value = plan;  // 更新选中的计划ID
+}
+
 async function getPlanList() {
     const res = await planList()
 
@@ -669,22 +759,34 @@ function isValidMobile() {
 
 
 var intervalId : any = null;
-async function handlePayment(plan : any) {
+async function handlePayment() {
+
+    if (!selectedPlan.value || !selectedPlan.value.id) {
+      operaError.value = true
+      operaErrorMsg.value = `请选择套餐`;
+      return;
+    }
+
+    if (!selectedPaymentMethod.value) {
+      operaError.value = true
+      operaErrorMsg.value = `请选择支付方式`;
+      return;
+    }
 
     if (intervalId) {
         clearInterval(intervalId)
     }
     
-    payLoadingId.value = plan.id
+    payLoading.value = true
 
     try {
 
-        if (plan) {
+        if (selectedPlan.value) {
             //const selectedPlan = plans.value.find((plan) => plan.id === selectedPlan.value);
             // proxy.$modal.msgSuccess("正在提交支付...");
             var formData = {
-                payType: "alipay",
-                planId: plan.id
+                payType: selectedPaymentMethod.value,
+                planId: selectedPlan.value.id
             }
             var res = await submitOrder(formData);
             
@@ -692,6 +794,7 @@ async function handlePayment(plan : any) {
                 var data = res.data
                 console.log(data.qrcode)
                 if (isValidMobile()) {
+                  
                     window.location.href = data.qrcode;
                 } else {
                     qcodeShow.value = true;
@@ -716,7 +819,7 @@ async function handlePayment(plan : any) {
     } 
 
     } finally {
-        payLoadingId.value = 0
+        payLoading.value = false
     }
 
 }
