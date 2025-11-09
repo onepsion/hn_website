@@ -19,7 +19,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      apiBase: 'https://hnapi.dsahn66.com/prod-api' 
+      apiBase: '/prod-api' 
       //apiBase: 'http://localhost:8202' 
     }
   },
