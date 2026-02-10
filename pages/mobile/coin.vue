@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <AppPay />
+    <AppCoin />
   </div>
 </template>
 
@@ -11,6 +11,7 @@ const router = useRouter()
 const route = useRoute()
 //拦截判断页面是否需要登录才能访问
 definePageMeta({
+  layout: 'nohead',
   middleware: 'common'
 })
 

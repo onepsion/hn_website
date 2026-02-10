@@ -38,9 +38,16 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     async setToken(token : string) {
         
-        localStorage.setItem('token', token)
-        const cookieToken = useCookie('token')
-        cookieToken.value = token
+      try {
+
+         localStorage.setItem('token', token)
+          const cookieToken = useCookie('token')
+          cookieToken.value = token
+
+      } catch(e) {
+
+      }
+       
 
         //this.fetchUser()
     },
@@ -136,31 +143,40 @@ export const useAuthStore = defineStore('auth', {
 
     // 初始化 token 和用户信息（页面刷新时调用）
     initAuth() {
-      if (typeof window !== 'undefined') {
-        var isExistToken = false as boolean;
-        const localToken = localStorage.getItem('token')
-        const localUser = localStorage.getItem('user')
-        if (localToken) {
-          this.token = localToken
-          isExistToken = true
-        } 
-        if (localUser) {
-          this.user = JSON.parse(localUser)
-        }
-        else {
-          const cookieToken = useCookie('token')
-          const cookieUser = useCookie('user')
-          if (cookieToken.value) {
-            this.token = cookieToken.value
+
+      try {
+
+        if (typeof window !== 'undefined') {
+          var isExistToken = false as boolean;
+          const localToken = localStorage.getItem('token')
+          const localUser = localStorage.getItem('user')
+          if (localToken) {
+            this.token = localToken
             isExistToken = true
+          } 
+          if (localUser) {
+            this.user = JSON.parse(localUser)
           }
-          if (cookieUser.value) {
-            this.user = JSON.parse(cookieUser.value)
+          else {
+            const cookieToken = useCookie('token')
+            const cookieUser = useCookie('user')
+            if (cookieToken.value) {
+              this.token = cookieToken.value
+              isExistToken = true
+            }
+            if (cookieUser.value) {
+              this.user = JSON.parse(cookieUser.value)
+            }
           }
+
+          return isExistToken;
         }
 
-        return isExistToken;
+      } catch(e) {
+
       }
+
+      
     }
   }
 })

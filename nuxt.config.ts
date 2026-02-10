@@ -19,9 +19,14 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      apiBase: '/prod-api' 
-      //apiBase: 'http://localhost:8202' 
+      //apiBase: '/prod-api' 
+      apiBase: 'http://192.168.0.106:8202' 
+      //apiBase: 'https://panel.dsahn66.info/prod-api'
     }
+  },
+  devServer: {
+    host: '0.0.0.0',
+    port: 3000
   },
   modules: ['@nuxtjs/i18n', '@nuxtjs/tailwindcss','@pinia/nuxt','@nuxtjs/color-mode'],
    // @ts-expect-error Nuxt Image module config

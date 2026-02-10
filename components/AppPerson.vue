@@ -104,7 +104,8 @@
 
 <script setup lang="ts" >
 import { ref, onMounted, watch } from 'vue';
-
+import useClipboard from 'vue-clipboard3';
+const { toClipboard } = useClipboard();
 import { useRouter } from 'vue-router'
 var person = ref({}) as any
 const auth = useAuthStore()
@@ -229,9 +230,11 @@ const getSub = async () => {
         const res = await auth.fetchUser()
 
         if (res.code === 200) {
+            
             var persion = res.data;
 
-            navigator.clipboard.writeText(persion.config.subUrl + "/subscr/shadowrocket/" + persion.link);
+            await toClipboard(persion.config.subUrl + "/subscr/shadowrocket/" + persion.link);
+            //navigator.clipboard.writeText(persion.config.subUrl + "/subscr/shadowrocket/" + persion.link);
 
             subSuccess.value = true;
         } else {

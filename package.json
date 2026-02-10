@@ -25,6 +25,7 @@
     "qrcode": "^1.5.4",
     "tailwindcss": "^3.4.14",
     "vue": "latest",
+    "vue-clipboard3": "^2.0.0",
     "vue-i18n": "^11.1.5",
     "vue-router": "latest",
     "vue3-markdown-it": "^1.0.10",

@@ -188,6 +188,7 @@ async function handlePayment() {
             
             if (res.code == 200) {
                 var data = res.data
+                debugger
                 console.log(data.qrcode)
                 if (isValidMobile()) {
                   
