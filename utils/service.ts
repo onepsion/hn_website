@@ -1,5 +1,4 @@
 // api/index.ts
-import { Body } from '#components'
 import { useApiFetch } from '~/utils/request'
 
 

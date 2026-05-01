@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <AppPay />
+    <AppPayNew />
   </div>
 </template>
 

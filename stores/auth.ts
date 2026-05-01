@@ -1,9 +1,7 @@
 // stores/auth.ts
 import { defineStore } from 'pinia'
-import { useRouter } from 'vue-router'
 import { useApiFetch } from '~/utils/request'
 import { useCookie } from '#app'
-const router = useRouter()
 
 interface User {
   id: string

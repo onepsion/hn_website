@@ -105,6 +105,7 @@
 <script setup lang="ts" >
 import { ref, onMounted, watch } from 'vue';
 import useClipboard from 'vue-clipboard3';
+import type { DownloadType } from '~/composables/useDownloadLinks'
 const { toClipboard } = useClipboard();
 import { useRouter } from 'vue-router'
 var person = ref({}) as any
@@ -116,15 +117,7 @@ const route = useRoute()
 var operaSuccess = ref(false)
 var subSuccess = ref(false)
 var subError = ref(false)
-
-const downloadLinks = ref<{
-  [key: string]: string;
-}>({
-  windows: '',
-  macos: '',
-  android: '',
-  ios: ''
-});
+const { loadDownloadLinks, openDownload } = useDownloadLinks()
 
 var statis = ref({}) as any
 
@@ -149,7 +142,7 @@ onMounted(() => {
 
     getStatis()
 
-    getDownLoad()
+    loadDownloadLinks()
 
 })
 
@@ -172,26 +165,6 @@ async function getStatis() {
     } 
 }
 
-async function getDownLoad() {
-    const res = await querySettings()
-
-    if (res.code === 200) {
-        var data = res.rows;
-        for (var index in data) {
-            if (data[index].appType == 'windows') {
-                downloadLinks.value.windows = data[index].downUrl
-            } else if (data[index].appType == 'android') {
-                downloadLinks.value.android = data[index].downUrl
-            } else if (data[index].appType == 'darwin') {
-                downloadLinks.value.macos = data[index].downUrl
-            } else if (data[index].appType == 'ios') {
-                downloadLinks.value.ios = data[index].downUrl
-            }
-        }
-    } 
-    
-}
-
 function tabMenu(key: string) {
     emit('menu', key);
 }
@@ -210,8 +183,8 @@ function getMemType(val : string) {
 }
 
 function download(name : string) {
-    var downObj = downloadLinks.value;
-    window.location.href = downObj[name]
+    const normalizedName = (name === 'darwin' ? 'macos' : name) as DownloadType
+    openDownload(normalizedName)
 }
 
 async function resetSub() {

@@ -88,7 +88,7 @@
       <!-- 其他菜单同理 -->
 
       <div v-if="activeMenu === 'pay'">
-          <AppPay />
+          <AppPayNew />
       </div>
 
       <div v-if="activeMenu === 'order'">

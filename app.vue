@@ -5,9 +5,11 @@
 </template>
 
 <style>
-
-  /* 默认背景为暗色，避免白屏 */
   html, body {
-    background-color: #111827; /* Tailwind dark:bg-gray-900 */
+    background-color: #f5f1e8;
+  }
+
+  html.dark, html.dark body {
+    background-color: #07111e;
   }
 </style>

@@ -19,8 +19,8 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      //apiBase: '/prod-api' 
-      apiBase: 'http://192.168.0.106:8202' 
+      apiBase: '/prod-api' 
+      //apiBase: 'http://192.168.0.106:8202' 
       //apiBase: 'https://panel.dsahn66.info/prod-api'
     }
   },
@@ -32,8 +32,8 @@ export default defineNuxtConfig({
    // @ts-expect-error Nuxt Image module config
   colorMode: {
     classSuffix: '', // dark 模式直接使用 'dark' 类，不加 '-mode'
-    preference: 'system', // 默认跟随系统
-    fallback: 'dark', // 当 localStorage 没有值时默认 light,
+    preference: 'light', // 默认使用亮色，更适合产品官网
+    fallback: 'light',
     storageKey: 'nuxt-color-mode'
   },
   // @ts-expect-error Nuxt Image module config

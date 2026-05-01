@@ -25,10 +25,12 @@ authStore.initAuth()
 </script>
 
 <template>
-  <div>
-    <AppHeader v-if="showHeader" :home="route.name?.toString().includes('index')" />
+  <div class="min-h-screen">
+    <AppHeader v-if="showHeader" />
 
-    <slot />
+    <main>
+      <slot />
+    </main>
     <AppFooter v-if="showHeader"/>
   </div>
 
