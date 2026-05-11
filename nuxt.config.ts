@@ -17,6 +17,15 @@ export default defineNuxtConfig({
       /blog/, 
     ]
   },
+  routeRules: {
+    '/file/**': {
+      headers: {
+        'cache-control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+        pragma: 'no-cache',
+        expires: '0'
+      }
+    }
+  },
   runtimeConfig: {
     public: {
       apiBase: '/prod-api' 

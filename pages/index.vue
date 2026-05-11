@@ -398,6 +398,7 @@ const goDashboard = () => {
               target="_blank"
               rel="noopener noreferrer"
               class="brand-button w-full justify-center"
+              @click.prevent="openDownload(item.key)"
             >
               {{ item.buttonText }}
             </a>

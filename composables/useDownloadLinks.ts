@@ -12,6 +12,7 @@ const DOWNLOAD_FILES: Record<DownloadType, string> = {
 const UNAVAILABLE_DOWNLOAD_TYPES: DownloadType[] = ['macos', 'ios']
 const NEW_TAB_DOWNLOAD_TYPES: DownloadType[] = ['windows', 'android']
 const DOWNLOAD_UNAVAILABLE_MESSAGE = '暂未开放'
+const DOWNLOAD_CACHE_VERSION = Date.now().toString()
 
 const createDefaultLinks = (): DownloadLinks => ({
   windows: '',
@@ -23,10 +24,14 @@ const createDefaultLinks = (): DownloadLinks => ({
 const createStaticLinks = (): DownloadLinks => {
   const basePath = '/file'
   const baseUrl = process.client ? `${window.location.origin}${basePath}` : basePath
+  const withCacheVersion = (url: string) => {
+    const separator = url.includes('?') ? '&' : '?'
+    return `${url}${separator}v=${DOWNLOAD_CACHE_VERSION}`
+  }
 
   return {
-    windows: `${baseUrl}/${DOWNLOAD_FILES.windows}`,
-    android: `${baseUrl}/${DOWNLOAD_FILES.android}`,
+    windows: withCacheVersion(`${baseUrl}/${DOWNLOAD_FILES.windows}`),
+    android: withCacheVersion(`${baseUrl}/${DOWNLOAD_FILES.android}`),
     macos: '',
     ios: '',
   }
@@ -110,12 +115,15 @@ export const useDownloadLinks = () => {
       return ''
     }
 
-    const target = downloadLinks.value[resolvedType]
+    let target = downloadLinks.value[resolvedType]
 
     if (!isDownloadAvailable(resolvedType) || !target) {
       window.alert(DOWNLOAD_UNAVAILABLE_MESSAGE)
       return ''
     }
+
+    const separator = target.includes('?') ? '&' : '?'
+    target = `${target}${separator}t=${Date.now()}`
 
     if (shouldOpenInNewTab(resolvedType)) {
       window.open(target, '_blank', 'noopener')
