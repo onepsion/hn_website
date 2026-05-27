@@ -42,6 +42,12 @@
               <span class="font-medium text-sm">{{ item.label }}</span>
             </li>
           </ul>
+          <button
+            @click="logout"
+            class="mt-6 w-full flex items-center justify-center px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-medium rounded-lg shadow transition duration-300"
+          >
+            退出登录
+          </button>
         </aside>
       </div>
     </transition>
@@ -63,6 +69,12 @@
         </li>
       </ul>
       <!-- <div class="mt-auto text-gray-400 dark:text-gray-500 text-xs">版本 1.0.0</div> -->
+      <button
+        @click="logout"
+        class="mt-6 flex items-center justify-center px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-medium rounded-lg shadow transition duration-300"
+      >
+        退出登录
+      </button>
     </aside>
 
     <!-- 右侧内容 -->
@@ -232,6 +244,12 @@ onMounted(() => {
 function selectMenu(key: string) {
   activeMenu.value = key
   showMobileMenu.value = false
+}
+
+function logout() {
+  auth.logout()
+  showMobileMenu.value = false
+  router.push('/login')
 }
 </script>
 
