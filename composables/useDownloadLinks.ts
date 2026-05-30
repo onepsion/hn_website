@@ -5,11 +5,11 @@ type DownloadLinks = Record<DownloadType, string>
 const DOWNLOAD_FILES: Record<DownloadType, string> = {
   windows: 'win',
   android: 'ad',
-  macos: 'mac.zip',
+  macos: 'macos',
   ios: 'ios',
 }
 
-const UNAVAILABLE_DOWNLOAD_TYPES: DownloadType[] = ['macos', 'ios']
+const UNAVAILABLE_DOWNLOAD_TYPES: DownloadType[] = ['ios']
 const NEW_TAB_DOWNLOAD_TYPES: DownloadType[] = ['windows', 'android']
 const DOWNLOAD_UNAVAILABLE_MESSAGE = '暂未开放'
 const DOWNLOAD_CACHE_VERSION = Date.now().toString()
@@ -32,7 +32,7 @@ const createStaticLinks = (): DownloadLinks => {
   return {
     windows: withCacheVersion(`${baseUrl}/${DOWNLOAD_FILES.windows}`),
     android: withCacheVersion(`${baseUrl}/${DOWNLOAD_FILES.android}`),
-    macos: '',
+    macos: withCacheVersion(`${baseUrl}/${DOWNLOAD_FILES.macos}`),
     ios: '',
   }
 }

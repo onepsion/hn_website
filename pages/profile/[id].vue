@@ -163,6 +163,10 @@
       <div v-if="activeMenu === 'coin'">
             <AppCoin />
       </div>
+
+      <div v-if="activeMenu === 'lottery'">
+            <AppLottery />
+      </div>
     </main>
 
 

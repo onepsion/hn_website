@@ -103,4 +103,16 @@ export const queryDeviceList = () => {
   }) as any
 }
 
+export const getLotteryActivity = (activityId: string | number) => {
+  return useApiFetch('/lottery/activity/' + activityId, {
+    method: 'GET'
+  }) as any
+}
+
+export const drawLottery = (activityId: string | number) => {
+  return useApiFetch('/lottery/draw/' + activityId, {
+    method: 'POST'
+  }) as any
+}
+
 
